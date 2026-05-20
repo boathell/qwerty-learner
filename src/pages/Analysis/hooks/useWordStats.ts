@@ -37,6 +37,7 @@ function getLevel(value: number) {
 
 export function useWordStats(startTimeStamp: number, endTimeStamp: number) {
   const [wordStats, setWordStats] = useState<IWordStats>({
+    isEmpty: true,
     exerciseRecord: [],
     wordRecord: [],
     wpmRecord: [],
