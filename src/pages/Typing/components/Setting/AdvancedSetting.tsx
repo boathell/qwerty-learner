@@ -103,7 +103,7 @@ export default function AdvancedSetting() {
           </div>
           <div className={styles.section}>
             <span className={styles.sectionLabel}>是否允许默写模式下显示提示</span>
-            <span className={styles.sectionDescription}>开启后，可以通过鼠标 hover 单词显示正确答案 </span>
+            <span className={styles.sectionDescription}>开启后，可以通过鼠标 hover 单词或按 Tab 显示正确答案 </span>
             <div className={styles.switchBlock}>
               <Switch checked={isShowAnswerOnHover} onChange={onToggleShowAnswerOnHover} className="switch-root">
                 <span aria-hidden="true" className="switch-thumb" />

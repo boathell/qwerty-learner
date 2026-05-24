@@ -14,6 +14,22 @@ const pressWords = async (page: Page, words: string[]) => {
   }
 }
 
+const setupDictationHintConfig = async (page: Page, isShowAnswerOnHover: boolean) => {
+  await page.addInitScript((showAnswerOnHover) => {
+    localStorage.setItem('dismissStartCardDate', JSON.stringify(new Date().toISOString()))
+    localStorage.setItem('isShowPrevAndNextWord', JSON.stringify(false))
+    localStorage.setItem('isShowAnswerOnHover', JSON.stringify(showAnswerOnHover))
+    localStorage.setItem(
+      'wordDictationConfig',
+      JSON.stringify({
+        isOpen: true,
+        type: 'hideAll',
+        openBy: 'user',
+      }),
+    )
+  }, isShowAnswerOnHover)
+}
+
 test.describe('Practice', () => {
   test.beforeEach(async ({ page }) => {
     test.slow()
@@ -117,5 +133,32 @@ test.describe('Practice', () => {
     await page.getByRole('button', { name: '下一章节' }).click()
 
     await expect(await page.getByText('第 2 章').first().isVisible()).toBeTruthy()
+  })
+})
+
+test.describe('Practice dictation hints', () => {
+  test('Tab does not show the word when hint display is off', async ({ page }) => {
+    await setupDictationHintConfig(page, false)
+    await page.goto('/')
+
+    await page.keyboard.press('a')
+    await expect(page.getByTestId('word-display')).toHaveText('______')
+
+    await page.keyboard.down('Tab')
+    await expect(page.getByTestId('word-display')).toHaveText('______')
+    await page.keyboard.up('Tab')
+  })
+
+  test('Tab shows the word when hint display is on', async ({ page }) => {
+    await setupDictationHintConfig(page, true)
+    await page.goto('/')
+
+    await page.keyboard.press('a')
+    await expect(page.getByTestId('word-display')).toHaveText('______')
+
+    await page.keyboard.down('Tab')
+    await expect(page.getByTestId('word-display')).toHaveText('cancel')
+    await page.keyboard.up('Tab')
+    await expect(page.getByTestId('word-display')).toHaveText('______')
   })
 })

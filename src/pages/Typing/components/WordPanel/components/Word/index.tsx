@@ -51,6 +51,7 @@ export default function WordComponent({ word, onFinish }: { word: Word; onFinish
 
   const [showTipAlert, setShowTipAlert] = useState(false)
   const wordPronunciationIconRef = useRef<WordPronunciationIconRef>(null)
+  const canShowAnswerHint = wordDictationConfig.isOpen && isShowAnswerOnHover
 
   useEffect(() => {
     // run only when word changes
@@ -103,20 +104,28 @@ export default function WordComponent({ word, onFinish }: { word: Word; onFinish
   useHotkeys(
     'tab',
     () => {
+      if (!canShowAnswerHint) return
       handleHoverWord(true)
     },
     { enableOnFormTags: true, preventDefault: true },
-    [],
+    [canShowAnswerHint],
   )
 
   useHotkeys(
     'tab',
     () => {
+      if (!canShowAnswerHint) return
       handleHoverWord(false)
     },
     { enableOnFormTags: true, keyup: true, preventDefault: true },
-    [],
+    [canShowAnswerHint],
   )
+
+  useEffect(() => {
+    if (!canShowAnswerHint) {
+      handleHoverWord(false)
+    }
+  }, [canShowAnswerHint, handleHoverWord])
   useHotkeys(
     'ctrl+j',
     () => {
@@ -290,11 +299,12 @@ export default function WordComponent({ word, onFinish }: { word: Word; onFinish
         {['romaji', 'hapin'].includes(currentLanguage) && word.notation && <Notation notation={word.notation} />}
         <div
           className={`tooltip-info relative w-fit bg-transparent p-0 leading-normal shadow-none dark:bg-transparent ${
-            wordDictationConfig.isOpen ? 'tooltip' : ''
+            canShowAnswerHint ? 'tooltip' : ''
           }`}
-          data-tip="按 Tab 快捷键显示完整单词"
+          data-tip={canShowAnswerHint ? '按 Tab 快捷键显示完整单词' : undefined}
         >
           <div
+            data-testid="word-display"
             onMouseEnter={() => handleHoverWord(true)}
             onMouseLeave={() => handleHoverWord(false)}
             className={`flex items-center ${isTextSelectable && 'select-all'} justify-center ${wordState.hasWrong ? style.wrong : ''}`}
