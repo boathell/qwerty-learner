@@ -120,4 +120,125 @@
 
 现在你可以提交 PR 了，我们会尽快 review 你的代码，如果一切顺利，你的词典将会在下一个版本中发布。🎉
 
+## 2. PEP 初中英语教材词表导入流程
+
+适用于从人教版 7、8、9 年级英语教材 PDF 中提取 `Vocabulary in Each Unit` 单元词汇表，并导入到系统词典。
+
+### 2.1 输入信息
+
+每次处理前需要确认：
+
+- PDF 文件名。
+- 词表页码范围，按 PDF 物理页码处理。
+- 对应系统入口，例如 `qi1`、`qi2`、`ba1`、`ba2`、`jiu`。
+- 是否替换已有入口。默认替换对应年级入口，不新增 2026 入口。
+
+### 2.2 提取步骤
+
+1. 先用 `pdftotext` 检查 PDF 是否有文本层。
+2. 如果文本层为空或乱码，将指定页渲染为高分辨率图片。
+3. 用 OCR 识别每页图片。
+4. 词表通常是双栏排版，先按左右栏拆分，再按每栏从上到下的顺序合并。
+5. 按条目开头识别单词、短语、人名、地名和书名，续行合并到上一条。
+6. PDF 中只有一个音标时，同时写入 `usphone` 和 `ukphone`。
+
+目标 JSON 格式：
+
+```json
+[
+  {
+    "name": "calligraphy",
+    "trans": ["书法"],
+    "usphone": "ka\"lgrafi",
+    "ukphone": "ka\"lgrafi"
+  }
+]
+```
+
+### 2.3 清洗要点
+
+OCR 常见问题：
+
+- `v.` 被识别成 `1.`。
+- `adj.`、`adv.` 被识别成 `acj.`、`adu.`、`adw.`。
+- 页码 `p.73`、词性 `n.`、`v.` 被误识别成独立词条。
+- 页首或栏首可能只剩释义，漏掉词条名。
+- 跨行短语、作品名、人名容易被拆成多个条目。
+- 双栏如果直接按整页顺序读，会打乱原教材顺序。
+
+清洗原则：
+
+- 保留教材词表原始顺序。
+- 人名、地名、短语、作品名都按 PDF 词表纳入。
+- 词条名和中文释义优先保证准确。
+- 音标尽量保留 OCR 结果；若 PDF 只有一个音标，同步写入 `usphone` / `ukphone`。
+- 删除 OCR 产生的空释义、重复词条和明显伪词条。
+
+### 2.4 文件命名
+
+2026 版 PEP 初中英语词表建议使用：
+
+```text
+PEPChuZhong7_1_2026.json
+PEPChuZhong7_2_2026.json
+PEPChuZhong8_1_2026.json
+PEPChuZhong8_2_2026.json
+PEPChuZhong9_1_2026.json
+```
+
+文件放在：
+
+```text
+public/dicts/
+```
+
+### 2.5 更新入口
+
+修改：
+
+```text
+src/resources/dictionary.ts
+```
+
+只更新对应入口的：
+
+- `url`
+- `length`
+
+例如：
+
+```ts
+{
+  id: 'ba2',
+  name: '八年级下',
+  description: '人教版八年级下册',
+  category: '青少年英语',
+  tags: ['人教版'],
+  url: '/dicts/PEPChuZhong8_2_2026.json',
+  length: 598,
+  language: 'en',
+  languageCategory: 'en',
+}
+```
+
+不要提交教材 PDF，只提交生成的 JSON 和 `dictionary.ts` 修改。
+
+### 2.6 校验清单
+
+```bash
+jq empty public/dicts/PEPChuZhong8_2_2026.json
+jq length public/dicts/PEPChuZhong8_2_2026.json
+curl -s -o /tmp/dict.json -w '%{http_code}\n' http://localhost:5173/dicts/PEPChuZhong8_2_2026.json
+jq length /tmp/dict.json
+```
+
+还需要人工抽查：
+
+- 第一页开头词。
+- 每个单元开头词。
+- 中间页跨栏词。
+- 最后一页末尾词。
+- 词典页展示的词数是否等于 JSON 实际长度。
+- 选择对应年级后，首页加载的是否是新版词表。
+
 ## 别忘了，在任何步骤遇到困难时，你都可以转向 qwerty learner 社区寻求帮助。我们是一个非常友好的社区，随时欢迎你的加入！🤝
