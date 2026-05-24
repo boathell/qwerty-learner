@@ -1,4 +1,5 @@
 import styles from './index.module.css'
+import { verifySettingPassword } from './verifySettingPassword'
 import { isIgnoreCaseAtom, isShowAnswerOnHoverAtom, isShowPrevAndNextWordAtom, isTextSelectableAtom, randomConfigAtom } from '@/store'
 import { Switch } from '@headlessui/react'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
@@ -13,7 +14,9 @@ export default function AdvancedSetting() {
   const [isShowAnswerOnHover, setIsShowAnswerOnHover] = useAtom(isShowAnswerOnHoverAtom)
 
   const onToggleRandom = useCallback(
-    (checked: boolean) => {
+    async (checked: boolean) => {
+      if (!(await verifySettingPassword())) return
+
       setRandomConfig((prev) => ({
         ...prev,
         isOpen: checked,
@@ -23,27 +26,35 @@ export default function AdvancedSetting() {
   )
 
   const onToggleLastAndNextWord = useCallback(
-    (checked: boolean) => {
+    async (checked: boolean) => {
+      if (!(await verifySettingPassword())) return
+
       setIsShowPrevAndNextWord(checked)
     },
     [setIsShowPrevAndNextWord],
   )
 
   const onToggleIgnoreCase = useCallback(
-    (checked: boolean) => {
+    async (checked: boolean) => {
+      if (!(await verifySettingPassword())) return
+
       setIsIgnoreCase(checked)
     },
     [setIsIgnoreCase],
   )
 
   const onToggleTextSelectable = useCallback(
-    (checked: boolean) => {
+    async (checked: boolean) => {
+      if (!(await verifySettingPassword())) return
+
       setIsTextSelectable(checked)
     },
     [setIsTextSelectable],
   )
   const onToggleShowAnswerOnHover = useCallback(
-    (checked: boolean) => {
+    async (checked: boolean) => {
+      if (!(await verifySettingPassword())) return
+
       setIsShowAnswerOnHover(checked)
     },
     [setIsShowAnswerOnHover],
