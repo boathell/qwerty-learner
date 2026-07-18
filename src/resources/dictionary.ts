@@ -2058,7 +2058,7 @@ const childrenEnglish: DictionaryResource[] = [
     category: '青少年英语',
     tags: ['人教版'],
     url: '/dicts/PEPChuZhong9_1_T.json',
-    length: 551,
+    length: 486,
     language: 'en',
     languageCategory: 'en',
   },
